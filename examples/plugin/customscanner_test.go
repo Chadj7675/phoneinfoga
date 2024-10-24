@@ -3,8 +3,15 @@ package main
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/sundowndev/phoneinfoga/v2/lib/number"
+	"github.com/sundowndev/phoneinfoga/v2/lib/remote"
 	"testing"
 )
+
+func TestCustomScanner_Metadata(t *testing.T) {
+	scanner := &customScanner{}
+	assert.Equal(t, "customscanner", scanner.Name())
+	assert.NotEmpty(t, scanner.Description())
+}
 
 func TestCustomScanner(t *testing.T) {
 	testcases := []struct {
@@ -31,11 +38,11 @@ func TestCustomScanner(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			scanner := &customScanner{}
 
-			if !scanner.ShouldRun(*tt.number) {
-				t.Fatal("ShouldRun() should be truthy")
+			if scanner.DryRun(*tt.number, remote.ScannerOptions{}) != nil {
+				t.Fatal("DryRun() should return nil")
 			}
 
-			got, err := scanner.Scan(*tt.number)
+			got, err := scanner.Run(*tt.number, remote.ScannerOptions{})
 			if tt.wantError != "" {
 				assert.EqualError(t, err, tt.wantError)
 			} else {
