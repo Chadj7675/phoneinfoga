@@ -2,9 +2,16 @@ package remote
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/sundowndev/phoneinfoga/v2/lib/filter"
 	"github.com/sundowndev/phoneinfoga/v2/lib/number"
 	"testing"
 )
+
+func TestLocalScanner_Metadata(t *testing.T) {
+	scanner := NewLocalScanner()
+	assert.Equal(t, Local, scanner.Name())
+	assert.NotEmpty(t, scanner.Description())
+}
 
 func TestLocalScanner(t *testing.T) {
 	testcases := []struct {
@@ -35,14 +42,14 @@ func TestLocalScanner(t *testing.T) {
 	for _, tt := range testcases {
 		t.Run(tt.name, func(t *testing.T) {
 			scanner := NewLocalScanner()
-			remote := NewLibrary()
+			remote := NewLibrary(filter.NewEngine())
 			remote.AddScanner(scanner)
 
-			if !scanner.ShouldRun() {
-				t.Fatal("ShouldRun() should be truthy")
+			if scanner.DryRun(*tt.number, ScannerOptions{}) != nil {
+				t.Fatal("DryRun() should return nil")
 			}
 
-			got, errs := remote.Scan(tt.number)
+			got, errs := remote.Scan(tt.number, ScannerOptions{})
 			if len(tt.wantErrors) > 0 {
 				assert.Equal(t, tt.wantErrors, errs)
 			} else {

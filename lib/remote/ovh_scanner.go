@@ -1,6 +1,7 @@
 package remote
 
 import (
+	"fmt"
 	"github.com/sundowndev/phoneinfoga/v2/lib/number"
 	"github.com/sundowndev/phoneinfoga/v2/lib/remote/suppliers"
 )
@@ -19,24 +20,27 @@ type OVHScannerResponse struct {
 	ZipCode     string `json:"zip_code,omitempty" console:"Zip code,omitempty"`
 }
 
-func NewOVHScanner(s suppliers.OVHSupplierInterface) *ovhScanner {
+func NewOVHScanner(s suppliers.OVHSupplierInterface) Scanner {
 	return &ovhScanner{client: s}
 }
 
-func (s *ovhScanner) Identifier() string {
+func (s *ovhScanner) Name() string {
 	return OVH
 }
 
-func (s *ovhScanner) ShouldRun() bool {
-	return true
+func (s *ovhScanner) Description() string {
+	return "Search a phone number through the OVH Telecom REST API."
 }
 
-func (s *ovhScanner) Scan(n *number.Number) (interface{}, error) {
+func (s *ovhScanner) DryRun(n number.Number, _ ScannerOptions) error {
 	if !s.isSupported(n.CountryCode) {
-		return nil, nil
+		return fmt.Errorf("country code %d is not supported", n.CountryCode)
 	}
+	return nil
+}
 
-	res, err := s.client.Search(*n)
+func (s *ovhScanner) Run(n number.Number, _ ScannerOptions) (interface{}, error) {
+	res, err := s.client.Search(n)
 	if err != nil {
 		return nil, err
 	}

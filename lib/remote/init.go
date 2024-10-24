@@ -12,4 +12,7 @@ func InitScanners(remote *Library) {
 	remote.AddScanner(NewNumverifyScanner(numverifySupplier))
 	remote.AddScanner(NewGoogleSearchScanner())
 	remote.AddScanner(NewOVHScanner(ovhSupplier))
+	remote.AddScanner(NewGoogleCSEScanner(nil))
+
+	remote.LoadPlugins()
 }
